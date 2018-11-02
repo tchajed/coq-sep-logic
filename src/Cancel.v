@@ -133,20 +133,6 @@ Section Mem.
     | StarNode l r => flatten l ++ flatten r
     end.
 
-  (*
-  Fixpoint flatten (t:op_tree) : list Prop * list op_element :=
-    match t with
-    | Element e => match e with
-                  | ConstEmp _ _ => ([], [])
-                  | LiftedProp _ _ P => ([P], [])
-                  | _ => ([], [e])
-                  end
-    | StarNode l r => let (ps1, es1) := flatten l in
-                     let (ps2, es2) := flatten r in
-                     (ps1 ++ ps2, es2 ++ es2)
-    end.
-   *)
-
   Fixpoint int_l vm (l: list op_element) : pred :=
     match l with
     | [] => emp
@@ -369,3 +355,21 @@ Ltac norm :=
   repeat match goal with
          | [ H: _ /\ _ |- _ ] => destruct H
          end.
+
+Module Demo.
+  Ltac norm_demo :=
+    intros;
+    quote_impl;
+    rewrite ?interpret_flatten;
+    apply interpret_l_sort_impl;
+    apply grab_props_impl.
+
+  Ltac simpl_flatten :=
+    cbn [flatten app].
+
+  Ltac simpl_sorting :=
+    cbn [Sorting.sortBy Sorting.sort Sorting.insert_sort Sorting.insert get_key PeanoNat.Nat.leb].
+
+  Ltac simpl_grab_props :=
+    cbn [grab_props].
+End Demo.

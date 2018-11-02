@@ -3,6 +3,9 @@ Require Import SepLogic.Cancel.
 Import PredNotations.
 Local Open Scope pred.
 
+Arguments Atom {A V}.
+Arguments LiftedProp {A V}.
+
 Section Tests.
   Context (A V:Type).
   Notation pred := (pred A V).
