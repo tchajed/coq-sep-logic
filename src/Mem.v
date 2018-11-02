@@ -8,7 +8,6 @@ From Tactical Require Import
 Require Import SepLogic.Instances.
 
 Set Implicit Arguments.
-Generalizable All Variables.
 
 Section Memory.
   Context (A V:Type).
@@ -58,6 +57,10 @@ Section Memory.
     firstorder.
   Qed.
 
+  Global Instance disjoint_symmetric : Symmetric disjoint.
+  exact disjoint_sym1.
+  Qed.
+
   Theorem disjoint_match2 m1 m2 :
     m1 # m2 <->
     (forall x, match m2 x with
@@ -82,8 +85,10 @@ Section Memory.
     extensionality a; auto.
   Qed.
 
+  Hint Unfold upd empty disjoint union : mem.
+
   Ltac t :=
-    unfold upd, empty, disjoint, union;
+    autounfold with mem;
     repeat match goal with
            | |- @eq mem _ _ => apply mem_ext_eq; intros
            | _ => progress destruct matches
@@ -152,6 +157,13 @@ Section Memory.
     destruct_with_eqn (m1 x); t.
   Qed.
 
+  Definition union_disjoint_elim m m1 m2 :
+    m # (m1 + m2) ->
+    m # m1 /\ m # m2.
+  Proof.
+    split; eauto using union_disjoint1, union_disjoint2.
+  Qed.
+
   Definition union_disjoint_intro m m1 m2 :
     m # m1 ->
     m # m2 ->
@@ -161,6 +173,50 @@ Section Memory.
     destruct_with_eqn (m1 x); t.
   Qed.
 
+  Definition union_assoc m1 m2 m3 :
+    m1 + m2 + m3 = m1 + (m2 + m3)
+    := magic.
+
+  Definition singleton a v : mem := upd empty a v.
+
+  Hint Unfold singleton : mem.
+
+  Definition disjoint_different_singleton m a v v' :
+    m # singleton a v ->
+    m # singleton a v'.
+  Proof.
+    t.
+    destruct matches in *;
+      repeat match goal with
+             | [ H: Some _ = Some _ |- _ ] =>
+               inversion H; subst; clear H
+             end.
+    specialize (H _ _ ltac:(eauto)).
+    rewrite Heqs in *; eauto.
+  Qed.
+
+  Definition singleton_eq a v :
+    singleton a v a = Some v
+    := magic.
+
+  Definition singleton_ne a v a' :
+    a <> a' ->
+    singleton a v a' = None
+    := magic.
+
 End Memory.
 
 Arguments empty A V : clear implicits.
+
+Module MemNotations.
+  Declare Scope mem.
+  Open Scope mem.
+  Infix "#" := disjoint (at level 70, no associativity).
+  Infix "+" := union.
+End MemNotations.
+
+Hint Rewrite upd_eq : upd.
+Hint Rewrite upd_ne using solve [ trivial || congruence ] : upd.
+Hint Rewrite singleton_eq : upd.
+Hint Rewrite singleton_ne using solve [ trivial || congruence ] : upd.
+Hint Rewrite upd_upd : upd.
