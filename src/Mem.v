@@ -23,8 +23,11 @@ Section Memory.
   Definition disjoint m1 m2 :=
     forall x v, m1 x = Some v -> forall v', m2 x = Some v' -> False.
 
+  Infix "#" := disjoint (at level 70, no associativity).
+  Infix "+" := union.
+
   Theorem disjoint_match1 m1 m2 :
-    disjoint m1 m2 <->
+    m1 # m2 <->
     (forall x, match m1 x with
           | Some v => m2 x = None
           | None => True
@@ -39,19 +42,19 @@ Section Memory.
   Qed.
 
   Theorem disjoint_sym m1 m2 :
-    disjoint m1 m2 <-> disjoint m2 m1.
+    m1 # m2 <-> m2 # m1.
   Proof.
     firstorder.
   Qed.
 
   Theorem disjoint_sym1 m1 m2 :
-    disjoint m1 m2 -> disjoint m2 m1.
+    m1 # m2 -> m2 # m1.
   Proof.
     firstorder.
   Qed.
 
   Theorem disjoint_match2 m1 m2 :
-    disjoint m1 m2 <->
+    m1 # m2 <->
     (forall x, match m2 x with
           | Some v => m1 x = None
           | None => True
@@ -109,29 +112,29 @@ Section Memory.
     := magic.
 
   Definition emp_disjoint1 m :
-    disjoint m emp
+    m # emp
     := magic.
 
   Definition emp_disjoint2 m :
-    disjoint emp m
+    emp # m
     := magic.
 
   Definition emp_union1 m :
-    union m emp = m
+    m + emp = m
     := magic.
 
   Definition emp_union2 m :
-    union emp m = m
+    emp + m = m
     := magic.
 
   Definition disjoint_union_comm m1 m2 :
-    disjoint m1 m2 ->
-    union m1 m2 = union m2 m1
+    m1 # m2 ->
+    m1 + m2 = m2 + m1
     := magic.
 
   Definition union_disjoint1 m m1 m2 :
-    disjoint m (union m1 m2) ->
-    disjoint m m1.
+    m # (m1 + m2) ->
+    m # m1.
   Proof.
     t.
     specialize (H _ _ ltac:(eauto)).
@@ -139,8 +142,8 @@ Section Memory.
   Qed.
 
   Definition union_disjoint2 m m1 m2 :
-    disjoint m (union m1 m2) ->
-    disjoint m m2.
+    m # (m1 + m2) ->
+    m # m2.
   Proof.
     t.
     specialize (H _ _ ltac:(eauto)).
@@ -148,9 +151,9 @@ Section Memory.
   Qed.
 
   Definition union_disjoint_intro m m1 m2 :
-    disjoint m m1 ->
-    disjoint m m2 ->
-    disjoint m (union m1 m2).
+    m # m1 ->
+    m # m2 ->
+    m # (m1 + m2).
   Proof.
     t.
     destruct_with_eqn (m1 x); t.
