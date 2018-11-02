@@ -218,10 +218,10 @@ Opaque upd singleton.
 Arguments empty A V : clear implicits.
 
 Module MemNotations.
-  Declare Scope mem.
-  Open Scope mem.
-  Infix "#" := disjoint (at level 70, no associativity).
-  Infix "+" := union.
+  Declare Scope mem_scope.
+  Delimit Scope mem_scope with mem.
+  Infix "#" := disjoint (at level 70, no associativity) : mem_scope.
+  Infix "+" := union : mem_scope.
 End MemNotations.
 
 Hint Rewrite upd_eq : upd.

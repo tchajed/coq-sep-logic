@@ -7,7 +7,9 @@ From Tactical Require Import
 
 Require Import SepLogic.Mem.
 Require Import SepLogic.Instances.
+
 Import MemNotations.
+Local Open Scope mem.
 
 Set Implicit Arguments.
 
@@ -24,7 +26,7 @@ Section Pred.
   Definition pimpl p1 p2 :=
     forall m, p1 m -> p2 m.
 
-  Infix "--->" := pimpl (at level 60, no associativity).
+  Infix "===>" := pimpl (at level 60, no associativity).
 
   Global Instance pimpl_preorder : PreOrder pimpl.
   firstorder.
@@ -33,24 +35,24 @@ Section Pred.
   Definition piff p1 p2 :=
     forall m, p1 m <-> p2 m.
 
-  Infix "<--->" := piff (at level 60, no associativity).
+  Infix "===" := piff (at level 60, no associativity).
 
   Global Instance piff_equivalence : Equivalence piff.
   firstorder.
   Qed.
 
   Theorem pimpl_to_piff p1 p2 :
-    p1 ---> p2 ->
-    p2 ---> p1 ->
-    p1 <---> p2.
+    p1 ===> p2 ->
+    p2 ===> p1 ->
+    p1 === p2.
   Proof.
     firstorder.
   Qed.
 
   Theorem piff_to_pimpl p1 p2 :
-    p1 <---> p2 ->
-    p1 ---> p2 /\
-    p2 ---> p1.
+    p1 === p2 ->
+    p1 ===> p2 /\
+    p2 ===> p1.
   Proof.
     firstorder.
   Qed.
@@ -78,11 +80,11 @@ Section Pred.
 
   Hint Unfold emp lift : pred.
 
-  Definition lift_emp : forall P, lift P ---> emp
+  Definition lift_emp : forall P, lift P ===> emp
     := magic.
 
   Definition emp_to_lift : forall (P:Prop),
-      P -> emp ---> lift P
+      P -> emp ===> lift P
     := magic.
 
   Definition star p1 p2 : pred :=
@@ -101,11 +103,11 @@ Section Pred.
   Hint Rewrite <- union_assoc : mem.
 
   Definition star_comm p1 p2 :
-    p1 * p2 <---> p2 * p1
+    p1 * p2 === p2 * p1
     := magic.
 
   Definition star_assoc p1 p2 p3 :
-    p1 * p2 * p3 <---> p1 * (p2 * p3).
+    p1 * p2 * p3 === p1 * (p2 * p3).
   Proof.
     t.
     repeat match goal with
@@ -123,7 +125,7 @@ Section Pred.
   Qed.
 
   Theorem star_emp p :
-    p * emp <---> p.
+    p * emp === p.
   Proof.
     t.
     descend; intuition eauto.
@@ -131,7 +133,7 @@ Section Pred.
   Qed.
 
   Definition lift_star : forall P1 P2,
-      lift P1 * lift P2 <---> lift (P1 /\ P2)
+      lift P1 * lift P2 === lift (P1 /\ P2)
     := magic.
 
   Definition sep_ex T (p: T -> pred) : pred :=
@@ -156,6 +158,10 @@ probably fine *)
 
   Hint Resolve disjoint_different_singleton.
 
+  Ltac simpl_union :=
+    unfold union; cbn [mem_read];
+    autorewrite with upd; auto.
+
   Theorem upd_ptsto m a v0 v p :
     (star p (ptsto a v0)) m ->
     (star p (ptsto a v)) (upd m a v).
@@ -166,10 +172,17 @@ probably fine *)
     apply mem_ext_eq; intro a'.
     destruct (a == a'); subst; autorewrite with upd.
     - rewrite disjoint_union_comm by eauto.
-      unfold union; cbn [mem_read].
-      autorewrite with upd; auto.
-    - unfold union; cbn [mem_read].
-      autorewrite with upd; auto.
+      simpl_union.
+    - simpl_union.
+  Qed.
+
+  Theorem ptsto_eq m a v p :
+    (star p (ptsto a v)) m ->
+    m a = Some v.
+  Proof.
+    t.
+    rewrite disjoint_union_comm by auto.
+    simpl_union.
   Qed.
 
   Global Instance star_respects_impl :
@@ -195,3 +208,14 @@ probably fine *)
   Qed.
 
 End Pred.
+
+Module PredNotations.
+  Declare Scope pred_scope.
+  Delimit Scope pred_scope with pred.
+  Infix "===>" := pimpl (at level 60, no associativity) : pred_scope.
+  Infix "===" := piff (at level 60, no associativity) : pred_scope.
+  Infix "*" := star : pred_scope.
+  Notation "[ P ]" := (lift P) : pred_scope.
+  Notation "'exists' x .. y , p" :=
+    (sep_ex (fun x => .. (sep_ex (fun y => p)) ..)) : pred_scope.
+End PredNotations.
