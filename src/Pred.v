@@ -84,7 +84,7 @@ Section Pred.
     := magic.
 
   Definition emp_to_lift : forall (P:Prop),
-      P -> emp ===> lift P
+      P -> emp === lift P
     := magic.
 
   Definition star p1 p2 : pred :=

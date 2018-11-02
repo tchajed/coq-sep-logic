@@ -44,4 +44,13 @@ Section Tests.
     reflexivity.
   Qed.
 
+  Theorem test_norm_nice_goals p1 p2 p3 p (P Q: Prop) :
+    (P -> p1 * p2 * p3 ===> p) ->
+    p1 * [Q] * p2 * p3 * [P] ===> p.
+  Proof.
+    intros Himpl.
+    norm.
+    exact (Himpl ltac:(assumption)).
+  Qed.
+
 End Tests.
