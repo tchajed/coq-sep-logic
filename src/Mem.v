@@ -1,6 +1,10 @@
 From Coq Require Export FunctionalExtensionality.
 From Coq Require Import Setoid.
 
+From Tactical Require Import
+     Propositional
+     SimplMatch.
+
 Require Import SepLogic.Instances.
 
 Set Implicit Arguments.
@@ -9,9 +13,10 @@ Generalizable All Variables.
 Section Memory.
   Context (A V:Type).
   Definition mem := A -> option V.
-  Implicit Type (m:mem).
+  Implicit Types (a:A) (v:V).
+  Implicit Types (m:mem).
 
-  Definition emp : mem :=
+  Definition empty : mem :=
     fun _ => None.
 
   Definition union m1 m2 : mem :=
@@ -78,15 +83,12 @@ Section Memory.
   Qed.
 
   Ltac t :=
-    unfold upd, emp, disjoint, union;
+    unfold upd, empty, disjoint, union;
     repeat match goal with
-           | |- forall _, _ => intros
-           | _ => congruence
            | |- @eq mem _ _ => apply mem_ext_eq; intros
-           | |- context[match equal ?a ?b with | _ => _ end] =>
-             destruct (equal a b); subst
-           | |- context[match ?d with | _ => _ end] =>
-             destruct d eqn:?
+           | _ => progress destruct matches
+           | _ => progress propositional
+           | _ => congruence
            | _ => solve [ eauto ]
            | _ => solve [ exfalso; eauto ]
            end.
@@ -111,20 +113,20 @@ Section Memory.
     upd (upd m a v) a' v' = upd (upd m a' v') a v
     := magic.
 
-  Definition emp_disjoint1 m :
-    m # emp
+  Definition empty_disjoint1 m :
+    m # empty
     := magic.
 
-  Definition emp_disjoint2 m :
-    emp # m
+  Definition empty_disjoint2 m :
+    empty # m
     := magic.
 
-  Definition emp_union1 m :
-    m + emp = m
+  Definition empty_union1 m :
+    m + empty = m
     := magic.
 
-  Definition emp_union2 m :
-    emp + m = m
+  Definition empty_union2 m :
+    empty + m = m
     := magic.
 
   Definition disjoint_union_comm m1 m2 :
@@ -160,3 +162,5 @@ Section Memory.
   Qed.
 
 End Memory.
+
+Arguments empty A V : clear implicits.
