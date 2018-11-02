@@ -1,5 +1,7 @@
+From Coq Require Export FunctionalExtensionality.
+From Coq Require Import Setoid.
+
 Require Import SepLogic.Instances.
-Require Export FunctionalExtensionality.
 
 Set Implicit Arguments.
 Generalizable All Variables.
@@ -9,6 +11,9 @@ Section Memory.
   Definition mem := A -> option V.
   Implicit Type (m:mem).
 
+  Definition emp : mem :=
+    fun _ => None.
+
   Definition union m1 m2 : mem :=
     fun x => match m1 x with
           | Some v => Some v
@@ -16,33 +21,50 @@ Section Memory.
           end.
 
   Definition disjoint m1 m2 :=
-    forall x, m1 x = None <-> m2 x = None.
+    forall x v, m1 x = Some v -> forall v', m2 x = Some v' -> False.
+
+  Theorem disjoint_match1 m1 m2 :
+    disjoint m1 m2 <->
+    (forall x, match m1 x with
+          | Some v => m2 x = None
+          | None => True
+          end).
+  Proof.
+    unfold disjoint; split; intros.
+    destruct_with_eqn (m1 x); destruct_with_eqn (m2 x); eauto.
+    exfalso; eauto.
+    specialize (H x).
+    replace (m1 x) in H.
+    congruence.
+  Qed.
 
   Theorem disjoint_sym m1 m2 :
+    disjoint m1 m2 <-> disjoint m2 m1.
+  Proof.
+    firstorder.
+  Qed.
+
+  Theorem disjoint_sym1 m1 m2 :
     disjoint m1 m2 -> disjoint m2 m1.
   Proof.
     firstorder.
+  Qed.
+
+  Theorem disjoint_match2 m1 m2 :
+    disjoint m1 m2 <->
+    (forall x, match m2 x with
+          | Some v => m1 x = None
+          | None => True
+          end).
+  Proof.
+    setoid_rewrite disjoint_sym.
+    apply disjoint_match1.
   Qed.
 
   Context {Aeq: EqDec A}.
 
   Definition upd (m: mem) (a0:A) (v:V) : mem :=
     fun a => if a0 == a then Some v else m a.
-
-  Theorem upd_eq m a v :
-    upd m a v a = Some v.
-  Proof.
-    unfold upd.
-    destruct (a == a); try congruence.
-  Qed.
-
-  Theorem upd_ne m a v a' :
-    a <> a' ->
-    upd m a v a' = m a'.
-  Proof.
-    unfold upd; intros.
-    destruct (a == a'); try congruence.
-  Qed.
 
   Theorem mem_ext_eq m1 m2 :
     (forall a, m1 a = m2 a) ->
@@ -52,22 +74,86 @@ Section Memory.
     extensionality a; auto.
   Qed.
 
-  Theorem upd_upd m a v v' :
-    upd (upd m a v) a v' = upd m a v'.
+  Ltac t :=
+    unfold upd, emp, disjoint, union;
+    repeat match goal with
+           | |- forall _, _ => intros
+           | _ => congruence
+           | |- @eq mem _ _ => apply mem_ext_eq; intros
+           | |- context[match equal ?a ?b with | _ => _ end] =>
+             destruct (equal a b); subst
+           | |- context[match ?d with | _ => _ end] =>
+             destruct d eqn:?
+           | _ => solve [ eauto ]
+           | _ => solve [ exfalso; eauto ]
+           end.
+
+  Notation magic := ltac:(t) (only parsing).
+
+  Definition upd_eq m a v :
+    upd m a v a = Some v
+    := magic.
+
+  Definition upd_ne m a v a' :
+    a <> a' ->
+    upd m a v a' = m a'
+    := magic.
+
+  Definition upd_upd m a v v' :
+    upd (upd m a v) a v' = upd m a v'
+    := magic.
+
+  Definition upd_upd_ne m a v a' v' :
+    a <> a' ->
+    upd (upd m a v) a' v' = upd (upd m a' v') a v
+    := magic.
+
+  Definition emp_disjoint1 m :
+    disjoint m emp
+    := magic.
+
+  Definition emp_disjoint2 m :
+    disjoint emp m
+    := magic.
+
+  Definition emp_union1 m :
+    union m emp = m
+    := magic.
+
+  Definition emp_union2 m :
+    union emp m = m
+    := magic.
+
+  Definition disjoint_union_comm m1 m2 :
+    disjoint m1 m2 ->
+    union m1 m2 = union m2 m1
+    := magic.
+
+  Definition union_disjoint1 m m1 m2 :
+    disjoint m (union m1 m2) ->
+    disjoint m m1.
   Proof.
-    unfold upd; intros.
-    apply mem_ext_eq; intros.
-    destruct (a == a0); subst; auto.
+    t.
+    specialize (H _ _ ltac:(eauto)).
+    replace (m1 x) in *; t.
   Qed.
 
-  Theorem upd_upd_ne m a v a' v' :
-    a <> a' ->
-    upd (upd m a v) a' v' = upd (upd m a' v') a v.
+  Definition union_disjoint2 m m1 m2 :
+    disjoint m (union m1 m2) ->
+    disjoint m m2.
   Proof.
-    unfold upd; intros.
-    apply mem_ext_eq; intros.
-    destruct (a == a0); subst; auto.
-    destruct (a' == a0); try congruence.
+    t.
+    specialize (H _ _ ltac:(eauto)).
+    destruct_with_eqn (m1 x); t.
+  Qed.
+
+  Definition union_disjoint_intro m m1 m2 :
+    disjoint m m1 ->
+    disjoint m m2 ->
+    disjoint m (union m1 m2).
+  Proof.
+    t.
+    destruct_with_eqn (m1 x); t.
   Qed.
 
 End Memory.
