@@ -1,4 +1,5 @@
-ALL_VFILES := $(shell find -L 'src' 'vendor' -name "*.v")
+SRC_DIRS := 'src' $(shell test -d 'vendor')
+ALL_VFILES := $(shell find -L $(SRC_DIRS) -name "*.v")
 TEST_VFILES := $(shell find -L 'src' -name "*Tests.v")
 PROJ_VFILES := $(shell find -L 'src' -name "*.v")
 VFILES := $(filter-out $(TEST_VFILES),$(PROJ_VFILES))
@@ -34,7 +35,7 @@ endif
 clean:
 	@echo "CLEAN vo glob aux"
 	@rm -f $(ALL_VFILES:.v=.vo) $(ALL_VFILES:.v=.glob) .coqdeps.d _CoqProject
-	@find 'src' 'vendor' -name ".*.aux" -exec rm {} \;
+	@find $(SRC_DIRS) -name ".*.aux" -exec rm {} \;
 
 .PHONY: default test clean
 .DELETE_ON_ERROR:
