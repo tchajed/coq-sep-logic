@@ -72,37 +72,60 @@ Local Ltac reify_helper A V term ctx :=
     end
   end.
 
-Local Ltac quote_with A V ctx term :=
-  let ctx_x := reify_helper A V term ctx in
-  let ctx := (eval cbv [fst] in (fst ctx_x)) in
-  let x := (eval cbv [snd] in (snd ctx_x)) in
-  constr:(interpret ctx x).
+Local Ltac with_reified A V ctx x rx :=
+  let ctx_t := reify_helper A V x ctx in
+  let ctx := (eval cbv [fst] in (fst ctx_t)) in
+  let t := (eval cbv [snd] in (snd ctx_t)) in
+  rx ctx t.
 
-Ltac quote term rx :=
-  match type of term with
-  | pred ?A ?V =>
-    let reified := quote_with A V (varmap.empty (pred A V)) term in
-    rx reified
-  end.
+Local Ltac init_reify A V x rx :=
+  with_reified A V (varmap.empty (pred A V)) x rx.
 
-Local Ltac quote_impl :=
+Ltac quote_impl :=
   match goal with
   | |- @pimpl ?A ?V ?x ?y =>
-    quote x ltac:(fun x' =>
-                    match x' with
-                    | interpret ?ctx ?xt =>
-                      let y' := quote_with A V ctx y in
-                      match y' with
-                      | interpret ?ctx' ?yt =>
-                        change (interpret ctx' xt ===> interpret ctx' yt)
-                      end
-                    end)
+    let init := init_reify A V in
+    let then_do := with_reified A V in
+    init x
+         ltac:(
+      fun ctx xt =>
+        then_do ctx y
+                ltac:(
+          fun ctx' yt =>
+            change (interpret ctx' xt ===> interpret ctx' yt)))
+  end.
+
+Ltac quote_impl_hyp H :=
+  match type of H with
+  | ?lhs ===> ?rhs =>
+    match goal with
+    | |- @pimpl ?A ?V ?x ?y =>
+      let init := init_reify A V in
+      let then_do := with_reified A V in
+      init lhs ltac:(
+        fun ctx _ =>
+          then_do ctx rhs ltac:(
+            fun ctx _ =>
+              then_do ctx x ltac:(
+                fun ctx xt =>
+                  then_do ctx y ltac:(
+                    fun ctx' yt =>
+                      change (interpret ctx' xt ===> interpret ctx' yt)))))
+    end
   end.
 
 Theorem reify_test A V (p1 p2 p3: pred A V) :
   p1 * p2 * p3 ===> p1 * (p2 * p3).
 Proof.
   quote_impl.
+Abort.
+
+Theorem reify_with_hyp_test A V (p1 p2 p3: pred A V) :
+  p3 * p2 ===> p2 ->
+  p1 * p2 * p3 ===> p1 * (p2 * p3).
+Proof.
+  intros.
+  quote_impl_hyp H.
 Abort.
 
 (*! Proving theorems on reified syntax *)
@@ -326,17 +349,16 @@ Module Norm.
   End Mem.
 End Norm.
 
-Ltac norm :=
-  intros;
-  quote_impl;
+Ltac norm_reified :=
   rewrite ?Norm.interpret_flatten;
   apply Norm.interpret_l_sort_impl;
-  apply Norm.grab_props_impl;
-  simpl;
-  try match goal with
-      | |- True -> _ => let H := fresh in intro H; clear H
-      | _ => intros
-      end;
+  apply Norm.grab_props_impl.
+
+Ltac cleanup_normed_goal :=
+  match goal with
+  | |- True -> _ => intros _
+  | _ => intros
+  end;
   try match goal with
       | |- _ /\ True => split; [ | exact I ]
       end;
@@ -344,8 +366,19 @@ Ltac norm :=
          | [ H: _ /\ _ |- _ ] => destruct H
          end.
 
-Ltac cancel :=
-  norm;
+Ltac norm :=
+  intros;
+  quote_impl;
+  norm_reified; simpl;
+  cleanup_normed_goal.
+
+Ltac norm_hyp H :=
+  intros;
+  quote_impl_hyp H;
+  norm_reified; simpl;
+  cleanup_normed_goal.
+
+Ltac normed_cancellation :=
   try match goal with
       | |- _ /\ _ => split
       end;
@@ -354,13 +387,14 @@ Ltac cancel :=
       | [ H: ?P |- ?P ] => exact H
       end.
 
+Ltac cancel :=
+  norm; normed_cancellation.
+
 Module Demo.
   Ltac norm :=
     intros;
     quote_impl;
-    rewrite ?Norm.interpret_flatten;
-    apply Norm.interpret_l_sort_impl;
-    apply Norm.grab_props_impl.
+    norm_reified.
 
   Ltac simpl_flatten :=
     cbn [Norm.flatten app].

@@ -68,6 +68,27 @@ Section Tests.
     cancel.
   Qed.
 
+  Theorem test_cancel_hyp p1 p2 p3 p4 :
+    p4 * p1 ===> p3 ->
+    p1 * p2 * p4 ===> p2 * p3.
+  Proof.
+    intros.
+    (* norm_hyp ensures normalization prefers the hypothesis terms *)
+    norm_hyp H.
+    rewrite H.
+    reflexivity.
+  Qed.
+
+  Theorem test_cancel_hyp2 p1 p2 p3 p4 :
+    p3 ===> p4 * p1 ->
+    p2 * p3 ===> p1 * p2 * p4.
+  Proof.
+    intros.
+    norm_hyp H.
+    rewrite <- H.
+    reflexivity.
+  Qed.
+
 End Tests.
 
 Module Demo.
@@ -94,9 +115,7 @@ Module Demo.
     associativity and for non-empty lists do not leave an extra True or emp at
     the end *)
     simpl.
-    intro.
-    split; auto.
-    reflexivity.
+    cleanup_normed_goal; normed_cancellation.
   Qed.
 
 End Demo.
