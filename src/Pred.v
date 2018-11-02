@@ -166,8 +166,10 @@ probably fine *)
     apply mem_ext_eq; intro a'.
     destruct (a == a'); subst; autorewrite with upd.
     - rewrite disjoint_union_comm by eauto.
-      unfold union; autorewrite with upd; auto.
-    - unfold union; autorewrite with upd; auto.
+      unfold union; cbn [mem_read].
+      autorewrite with upd; auto.
+    - unfold union; cbn [mem_read].
+      autorewrite with upd; auto.
   Qed.
 
   Global Instance star_respects_impl :

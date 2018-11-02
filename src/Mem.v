@@ -11,18 +11,19 @@ Set Implicit Arguments.
 
 Section Memory.
   Context (A V:Type).
-  Definition mem := A -> option V.
+  Record mem :=
+    mkMem { mem_read :> A -> option V }.
   Implicit Types (a:A) (v:V).
   Implicit Types (m:mem).
 
   Definition empty : mem :=
-    fun _ => None.
+    mkMem (fun _ => None).
 
   Definition union m1 m2 : mem :=
-    fun x => match m1 x with
-          | Some v => Some v
-          | None => m2 x
-          end.
+    mkMem (fun x => match m1 x with
+                 | Some v => Some v
+                 | None => m2 x
+                 end).
 
   Definition disjoint m1 m2 :=
     forall x v, m1 x = Some v -> forall v', m2 x = Some v' -> False.
@@ -75,21 +76,28 @@ Section Memory.
   Context {Aeq: EqDec A}.
 
   Definition upd (m: mem) (a0:A) (v:V) : mem :=
-    fun a => if a0 == a then Some v else m a.
+    mkMem (fun a => if a0 == a then Some v else m a).
 
   Theorem mem_ext_eq m1 m2 :
     (forall a, m1 a = m2 a) ->
     m1 = m2.
   Proof.
     intros.
+    destruct m1, m2.
+    f_equal.
     extensionality a; auto.
   Qed.
 
+  Hint Unfold mem_read.
   Hint Unfold upd empty disjoint union : mem.
 
   Ltac t :=
     autounfold with mem;
+    simpl;
     repeat match goal with
+           | [ m: mem |- _ ] =>
+             destruct m as m
+           | |- context[mem_read] => progress simpl
            | |- @eq mem _ _ => apply mem_ext_eq; intros
            | _ => progress destruct matches
            | _ => progress propositional
@@ -206,6 +214,7 @@ Section Memory.
 
 End Memory.
 
+Opaque upd singleton.
 Arguments empty A V : clear implicits.
 
 Module MemNotations.
