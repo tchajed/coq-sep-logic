@@ -107,7 +107,7 @@ Section Pred.
     := magic.
 
   Definition star_assoc p1 p2 p3 :
-    p1 * p2 * p3 === p1 * (p2 * p3).
+    p1 * (p2 * p3) === p1 * p2 * p3.
   Proof.
     t.
     repeat match goal with
@@ -124,7 +124,7 @@ Section Pred.
            end; t.
   Qed.
 
-  Theorem star_emp p :
+  Theorem star_emp_r p :
     p * emp === p.
   Proof.
     t.
@@ -132,9 +132,43 @@ Section Pred.
     t.
   Qed.
 
+  Theorem star_emp_l p :
+    emp * p === p.
+  Proof.
+    rewrite star_comm.
+    apply star_emp_r.
+  Qed.
+
   Definition lift_star : forall P1 P2,
       lift P1 * lift P2 === lift (P1 /\ P2)
     := magic.
+
+  Definition impl_with_lift (P:Prop) p1 p2 :
+    (P -> p1 ===> p2) ->
+    lift P * p1 ===> p2
+    := magic.
+
+  Definition lift_equiv : forall P1 P2,
+      P1 <-> P2 ->
+      lift P1 === lift P2
+    := magic.
+
+  Global Instance lift_respects_iff :
+    Proper (iff ==> piff) lift.
+  Proof.
+    firstorder.
+  Qed.
+
+  Definition lift_impl : forall (P1 P2:Prop),
+      P1 -> P2 ->
+      lift P1 ===> lift P2
+    := magic.
+
+  Global Instance lift_respects_impl :
+    Proper (Basics.impl ==> pimpl) lift.
+  Proof.
+    firstorder.
+  Qed.
 
   Definition sep_ex T (p: T -> pred) : pred :=
     fun m => exists x, p x m.
@@ -207,6 +241,18 @@ probably fine *)
     t.
   Qed.
 
+  Global Instance piff_pimpl_partial_apply p :
+    Proper (piff ==> Basics.impl) (pimpl p).
+  Proof.
+    firstorder.
+  Qed.
+
+  Global Instance piff_pimpl_applied :
+    Proper (piff ==> piff ==> Basics.impl) pimpl.
+  Proof.
+    firstorder.
+  Qed.
+
 End Pred.
 
 Module PredNotations.
@@ -219,3 +265,5 @@ Module PredNotations.
   Notation "'exists' x .. y , p" :=
     (sep_ex (fun x => .. (sep_ex (fun y => p)) ..)) : pred_scope.
 End PredNotations.
+
+Arguments emp {A V}.
