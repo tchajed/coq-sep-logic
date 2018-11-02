@@ -3,9 +3,6 @@ Require Import SepLogic.Cancel.
 Import PredNotations.
 Local Open Scope pred.
 
-Arguments Atom {A V}.
-Arguments LiftedProp {A V}.
-
 Section Tests.
   Context (A V:Type).
   Notation pred := (pred A V).
@@ -15,19 +12,19 @@ Section Tests.
   Theorem test_assoc p1 p2 p3 :
     p1 * p2 * p3 ===> p1 * (p2 * p3).
   Proof.
-    norm; reflexivity.
+    cancel.
   Qed.
 
   Theorem test_reorder p1 p2 p3 :
     p1 * p2 * p3 ===> p1 * (p3 * p2).
   Proof.
-    norm; reflexivity.
+    cancel.
   Qed.
 
   Theorem test_collapse_emp p1 :
     emp * p1 ===> p1 * emp * emp.
   Proof.
-    norm; reflexivity.
+    cancel.
   Qed.
 
   Theorem test_lift_prop p1 p2 p3 Q :
@@ -56,4 +53,50 @@ Section Tests.
     exact (Himpl ltac:(assumption)).
   Qed.
 
+  Theorem test_cancel_extra_prop p1 (P Q:Prop) :
+    (P -> Q) ->
+    p1 * [P] ===> p1 * [Q].
+  Proof.
+    cancel.
+    (* cancel only solves the most trivial extra props *)
+    auto.
+  Qed.
+
+  Theorem test_cancel_exact_prop p1 (P:Prop) :
+    p1 * [P] ===> p1 * [P].
+  Proof.
+    cancel.
+  Qed.
+
 End Tests.
+
+Module Demo.
+
+  Arguments Atom {A V}.
+  Arguments LiftedProp {A V}.
+
+  Import Norm.
+  Import Varmap.VarmapNotations.
+  Local Open Scope vm.
+
+  Theorem test_demo A V (p1 p2 p3: pred A V) (P Q:Prop) :
+    P ->
+    p1 * (p2 * p3 * emp) * [Q] ===> [P] * p1 * emp * (p3 * p2).
+  Proof.
+    Demo.norm.
+    Demo.simpl_flatten.
+    (* flatten doesn't even keep the [emp]s *)
+    Demo.simpl_sorting.
+    (* sorting reorders all lifted props to the front, and orders atoms by their
+    index (which in practice will be the order from the left hand side) *)
+    Demo.simpl_grab_props.
+    (* finally, flatten_props1 and interpret_l make sure to produce the correct
+    associativity and for non-empty lists do not leave an extra True or emp at
+    the end *)
+    simpl.
+    intro.
+    split; auto.
+    reflexivity.
+  Qed.
+
+End Demo.

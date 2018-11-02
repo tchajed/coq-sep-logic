@@ -39,3 +39,12 @@ Module varmap.
     end.
 
 End varmap.
+
+Module VarmapNotations.
+  Declare Scope varmap_scope.
+  Delimit Scope varmap_scope with vm.
+  Notation "[ i1 |-> v1 ]  :: vm" := (varmap.cons i1 v1 vm)
+                                       (at level 20, vm at level 80,
+                                        only printing) : varmap_scope.
+  Notation "[]" := (varmap.empty _) (at level 0, only printing) : varmap_scope.
+End VarmapNotations.
