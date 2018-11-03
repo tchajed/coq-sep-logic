@@ -139,7 +139,6 @@ Module Norm.
     Notation op_element := (op_element A V).
 
     Import List.ListNotations.
-    Local Open Scope list.
 
     Hint Resolve (ltac:(reflexivity) : forall (p:pred), p === p).
 
@@ -254,7 +253,7 @@ Module Norm.
     Fixpoint flatten_props1 (l: list Prop) : Prop :=
       match l with
       | [] => True
-      | [P] => P
+      | [P]%list => P
       | P::Ps => P /\ flatten_props1 Ps
       end.
 

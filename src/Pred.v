@@ -261,6 +261,7 @@ Module PredNotations.
   Infix "===>" := pimpl (at level 60, no associativity) : pred_scope.
   Infix "===" := piff (at level 60, no associativity) : pred_scope.
   Infix "*" := star : pred_scope.
+  Notation "a |-> v" := (ptsto a v) (at level 35, no associativity) : pred_scope.
   Notation "[ P ]" := (lift P) : pred_scope.
   Notation "'exists' x .. y , p" :=
     (sep_ex (fun x => .. (sep_ex (fun y => p)) ..)) : pred_scope.
