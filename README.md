@@ -1,5 +1,7 @@
 # Separation logic library
 
+[![Build Status](https://travis-ci.org/tchajed/coq-sep-logic.svg?branch=master)](https://travis-ci.org/tchajed/coq-sep-logic)
+
 A basic library for separation logic in Coq.
 
 Uses `A -> option V` as the basic representation of heaps with addresses `A` and values `V`. Addresses should have decidable equality for basic operations like heap updates to work.
