@@ -263,8 +263,9 @@ Module PredNotations.
   Infix "*" := star : pred_scope.
   Notation "a |-> v" := (ptsto a v) (at level 35, no associativity) : pred_scope.
   Notation "[ P ]" := (lift P) : pred_scope.
-  Notation "'exists' x .. y , p" :=
-    (sep_ex (fun x => .. (sep_ex (fun y => p)) ..)) : pred_scope.
+  Notation "'exists!' x .. y , p" :=
+    (sep_ex (fun x => .. (sep_ex (fun y => p)) ..))
+    (at level 200, x binder, y binder): pred_scope.
 End PredNotations.
 
 Arguments emp {A V}.

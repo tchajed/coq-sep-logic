@@ -203,6 +203,25 @@ Section Memory.
     rewrite Heqs in *; eauto.
   Qed.
 
+  Lemma disjoint_from_singleton a v m :
+    m a = None ->
+    disjoint (singleton a v) m.
+  Proof.
+    t.
+    destruct (a == x); try congruence.
+  Qed.
+
+  Lemma disjoint_singleton_oob a v m :
+    disjoint (singleton a v) m ->
+    m a = None.
+  Proof.
+    t.
+    destruct_with_eqn (m a); eauto.
+    specialize (H a v).
+    destruct (a == a); try congruence.
+    exfalso; eauto.
+  Qed.
+
   Definition singleton_eq a v :
     singleton a v a = Some v
     := magic.

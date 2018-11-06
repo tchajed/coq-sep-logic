@@ -95,6 +95,20 @@ Ltac quote_impl :=
             change (interpret ctx' xt ===> interpret ctx' yt)))
   end.
 
+Ltac quote_eqn :=
+  match goal with
+  | |- @piff ?A ?V ?x ?y =>
+    let init := init_reify A V in
+    let then_do := with_reified A V in
+    init x
+         ltac:(
+      fun ctx xt =>
+        then_do ctx y
+                ltac:(
+          fun ctx' yt =>
+            change (interpret ctx' xt === interpret ctx' yt)))
+  end.
+
 Ltac quote_impl_hyp H :=
   match type of H with
   | ?lhs ===> ?rhs =>
@@ -111,6 +125,25 @@ Ltac quote_impl_hyp H :=
                   then_do ctx y ltac:(
                     fun ctx' yt =>
                       change (interpret ctx' xt ===> interpret ctx' yt)))))
+    end
+  end.
+
+Ltac quote_eqn_hyp H :=
+  match type of H with
+  | ?lhs === ?rhs =>
+    match goal with
+    | |- @pimpl ?A ?V ?x ?y =>
+      let init := init_reify A V in
+      let then_do := with_reified A V in
+      init lhs ltac:(
+        fun ctx _ =>
+          then_do ctx rhs ltac:(
+            fun ctx _ =>
+              then_do ctx x ltac:(
+                fun ctx xt =>
+                  then_do ctx y ltac:(
+                    fun ctx' yt =>
+                      change (interpret ctx' xt === interpret ctx' yt)))))
     end
   end.
 
@@ -244,6 +277,13 @@ Module Norm.
       rewrite <- ?interpret_l_sort; auto.
     Qed.
 
+    Theorem interpret_l_sort_iff vm l1 l2 :
+      interpret_l vm (sortBy get_key l1) === interpret_l vm (sortBy get_key l2) ->
+      interpret_l vm l1 === interpret_l vm l2.
+    Proof.
+      rewrite <- ?interpret_l_sort; auto.
+    Qed.
+
     Local Fixpoint flatten_props (l: list Prop) : Prop :=
       match l with
       | [] => True
@@ -330,6 +370,17 @@ Module Norm.
       rewrite star_emp_l; reflexivity.
     Qed.
 
+    Local Lemma iff_with_lifts (P Q:Prop) (p q: pred) :
+      (P -> p ===> q /\ Q) ->
+      lift P * p ===> lift Q * q.
+    Proof.
+      intros.
+      apply impl_with_lift; intuition idtac.
+      rewrite H.
+      rewrite <- emp_to_lift; auto.
+      rewrite star_emp_l; reflexivity.
+    Qed.
+
     Theorem grab_props_impl vm l1 l2 :
       (let (P, p) := grab_props l1 in
        let (Q, q) := grab_props l2 in
@@ -345,6 +396,26 @@ Module Norm.
       apply impl_with_lifts; eauto.
     Qed.
 
+    Theorem grab_props_iff vm l1 l2 :
+      (let (P, p) := grab_props l1 in
+       let (Q, q) := grab_props l2 in
+       match P, Q with
+       | nil, nil =>
+         interpret_l vm p === interpret_l vm q
+       | _, _ => False
+       end) ->
+      interpret_l vm l1 === interpret_l vm l2.
+    Proof.
+      intros.
+      rewrite ?interpret_grab_props.
+      destruct (grab_props l1) as [P p].
+      destruct (grab_props l2) as [Q q].
+      simpl.
+      destruct P, Q; intros; try contradiction.
+      simpl.
+      rewrite H; auto.
+    Qed.
+
   End Mem.
 End Norm.
 
@@ -352,6 +423,11 @@ Ltac norm_reified :=
   rewrite ?Norm.interpret_flatten;
   apply Norm.interpret_l_sort_impl;
   apply Norm.grab_props_impl.
+
+Ltac norm_reified_iff :=
+  rewrite ?Norm.interpret_flatten;
+  apply Norm.interpret_l_sort_iff;
+  apply Norm.grab_props_iff.
 
 Ltac cleanup_normed_goal :=
   match goal with
@@ -367,8 +443,12 @@ Ltac cleanup_normed_goal :=
 
 Ltac norm :=
   intros;
-  quote_impl;
-  norm_reified; simpl;
+  match goal with
+  | |- _ ===> _ =>
+    quote_impl; norm_reified
+  | |- _ === _ =>
+    quote_eqn; norm_reified_iff
+  end; simpl;
   cleanup_normed_goal.
 
 Ltac norm_hyp H :=
@@ -383,6 +463,7 @@ Ltac normed_cancellation :=
       end;
   try match goal with
       | |- ?p ===> ?p => reflexivity
+      | |- ?p === ?p => reflexivity
       | [ H: ?P |- ?P ] => exact H
       end.
 
