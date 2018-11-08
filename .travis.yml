@@ -10,7 +10,6 @@ env:
   - NJOBS="2"
   matrix:
   - COQ_IMAGE="coqorg/coq:dev"
-  - COQ_IMAGE="coqorg/coq:latest"
 
 install: |
   # Prepare the COQ container
