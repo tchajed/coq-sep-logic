@@ -241,6 +241,12 @@ Module MemNotations.
   Delimit Scope mem_scope with mem.
   Infix "#" := disjoint (at level 70, no associativity) : mem_scope.
   Infix "+" := union : mem_scope.
+  Notation "m [ a  :=  v ]" := (upd m a v) (at level 12, left associativity) : mem_scope.
+
+  (* we need to enable printing of the coercion to use the notation (as opposed
+  to printing an application) *)
+  Add Printing Coercion mem_read.
+  Notation "m [ a ]" := (mem_read m a) (at level 13, no associativity) : mem_scope.
 End MemNotations.
 
 Hint Rewrite upd_eq : upd.
