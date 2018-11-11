@@ -12,6 +12,8 @@ Import MemNotations.
 Local Open Scope mem.
 
 Set Implicit Arguments.
+(* for compatibility with coq master *)
+Set Warnings "-undeclared-scope".
 
 Section Pred.
   Context (A V:Type).
@@ -256,7 +258,7 @@ probably fine *)
 End Pred.
 
 Module PredNotations.
-  Declare Scope pred_scope.
+  (* Declare Scope pred_scope. *)
   Delimit Scope pred_scope with pred.
   Infix "===>" := pimpl (at level 60, no associativity) : pred_scope.
   Infix "===" := piff (at level 60, no associativity) : pred_scope.

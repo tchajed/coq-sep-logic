@@ -1,6 +1,8 @@
 From Coq Require Import PeanoNat.
 
 Set Implicit Arguments.
+(* for compatibility with coq master *)
+Set Warnings "-undeclared-scope".
 
 Class Default A := default_val: A.
 
@@ -41,7 +43,7 @@ Module varmap.
 End varmap.
 
 Module VarmapNotations.
-  Declare Scope varmap_scope.
+  (* Declare Scope varmap_scope. *)
   Delimit Scope varmap_scope with vm.
   Notation "[ i1 |-> v1 ]  :: vm" := (varmap.cons i1 v1 vm)
                                        (at level 20, vm at level 80,

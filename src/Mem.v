@@ -8,6 +8,8 @@ From Tactical Require Import
 Require Import SepLogic.Instances.
 
 Set Implicit Arguments.
+(* for compatibility with coq master *)
+Set Warnings "-undeclared-scope".
 
 Section Memory.
   Context (A V:Type).
@@ -237,7 +239,7 @@ Opaque upd singleton.
 Arguments empty A V : clear implicits.
 
 Module MemNotations.
-  Declare Scope mem_scope.
+  (* Declare Scope mem_scope. *)
   Delimit Scope mem_scope with mem.
   Infix "#" := disjoint (at level 70, no associativity) : mem_scope.
   Infix "+" := union : mem_scope.
