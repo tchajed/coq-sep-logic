@@ -18,7 +18,7 @@ Section Sorting.
                  else x'::insert x xs'
     end.
 
-  Hint Constructors Permutation.
+  Hint Constructors Permutation : core.
 
   Theorem inserted_permutation : forall x xs,
       Permutation (x::xs) (insert x xs).

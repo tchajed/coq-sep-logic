@@ -90,7 +90,7 @@ Section Memory.
     extensionality a; auto.
   Qed.
 
-  Hint Unfold mem_read.
+  Hint Unfold mem_read : core.
   Hint Unfold upd empty disjoint union : mem.
 
   Ltac t :=

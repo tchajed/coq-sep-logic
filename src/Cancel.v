@@ -173,7 +173,7 @@ Module Norm.
 
     Import List.ListNotations.
 
-    Hint Resolve (ltac:(reflexivity) : forall (p:pred), p === p).
+    Hint Resolve (ltac:(reflexivity) : forall (p:pred), p === p) : core.
 
     Fixpoint flatten (t:op_tree) : list op_element :=
       match t with

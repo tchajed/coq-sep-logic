@@ -97,10 +97,10 @@ Section Pred.
 
   Hint Unfold star : pred.
 
-  Hint Resolve disjoint_sym1.
-  Hint Resolve disjoint_union_comm.
-  Hint Resolve union_disjoint_intro.
-  Hint Resolve empty_disjoint1 empty_disjoint2.
+  Hint Resolve disjoint_sym1 : core.
+  Hint Resolve disjoint_union_comm : core.
+  Hint Resolve union_disjoint_intro : core.
+  Hint Resolve empty_disjoint1 empty_disjoint2 : core.
 
   Hint Rewrite <- union_assoc : mem.
 
@@ -192,7 +192,7 @@ probably fine *)
     t.
   Qed.
 
-  Hint Resolve disjoint_different_singleton.
+  Hint Resolve disjoint_different_singleton : core.
 
   Ltac simpl_union :=
     unfold union; cbn [mem_read];
