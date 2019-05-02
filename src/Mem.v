@@ -108,48 +108,46 @@ Section Memory.
            | _ => solve [ exfalso; eauto ]
            end.
 
-  Notation magic := ltac:(t) (only parsing).
+  Theorem upd_eq m a v :
+    upd m a v a = Some v.
+  Proof. t. Qed.
 
-  Definition upd_eq m a v :
-    upd m a v a = Some v
-    := magic.
-
-  Definition upd_ne m a v a' :
+  Theorem upd_ne m a v a' :
     a <> a' ->
-    upd m a v a' = m a'
-    := magic.
+    upd m a v a' = m a'.
+  Proof. t. Qed.
 
-  Definition upd_upd m a v v' :
-    upd (upd m a v) a v' = upd m a v'
-    := magic.
+  Theorem upd_upd m a v v' :
+    upd (upd m a v) a v' = upd m a v'.
+  Proof. t. Qed.
 
-  Definition upd_upd_ne m a v a' v' :
+  Theorem upd_upd_ne m a v a' v' :
     a <> a' ->
-    upd (upd m a v) a' v' = upd (upd m a' v') a v
-    := magic.
+    upd (upd m a v) a' v' = upd (upd m a' v') a v.
+  Proof. t. Qed.
 
-  Definition empty_disjoint1 m :
-    m # empty
-    := magic.
+  Theorem empty_disjoint1 m :
+    m # empty.
+  Proof. t. Qed.
 
-  Definition empty_disjoint2 m :
-    empty # m
-    := magic.
+  Theorem empty_disjoint2 m :
+    empty # m.
+  Proof. t. Qed.
 
-  Definition empty_union1 m :
-    m + empty = m
-    := magic.
+  Theorem empty_union1 m :
+    m + empty = m.
+  Proof. t. Qed.
 
-  Definition empty_union2 m :
-    empty + m = m
-    := magic.
+  Theorem empty_union2 m :
+    empty + m = m.
+  Proof. t. Qed.
 
-  Definition disjoint_union_comm m1 m2 :
+  Theorem disjoint_union_comm m1 m2 :
     m1 # m2 ->
-    m1 + m2 = m2 + m1
-    := magic.
+    m1 + m2 = m2 + m1.
+  Proof. t. Qed.
 
-  Definition union_disjoint1 m m1 m2 :
+  Theorem union_disjoint1 m m1 m2 :
     m # (m1 + m2) ->
     m # m1.
   Proof.
@@ -158,7 +156,7 @@ Section Memory.
     replace (m1 x) in *; t.
   Qed.
 
-  Definition union_disjoint2 m m1 m2 :
+  Theorem union_disjoint2 m m1 m2 :
     m # (m1 + m2) ->
     m # m2.
   Proof.
@@ -167,14 +165,14 @@ Section Memory.
     destruct_with_eqn (m1 x); t.
   Qed.
 
-  Definition union_disjoint_elim m m1 m2 :
+  Theorem union_disjoint_elim m m1 m2 :
     m # (m1 + m2) ->
     m # m1 /\ m # m2.
   Proof.
     split; eauto using union_disjoint1, union_disjoint2.
   Qed.
 
-  Definition union_disjoint_intro m m1 m2 :
+  Theorem union_disjoint_intro m m1 m2 :
     m # m1 ->
     m # m2 ->
     m # (m1 + m2).
@@ -183,15 +181,15 @@ Section Memory.
     destruct_with_eqn (m1 x); t.
   Qed.
 
-  Definition union_assoc m1 m2 m3 :
-    m1 + m2 + m3 = m1 + (m2 + m3)
-    := magic.
+  Theorem union_assoc m1 m2 m3 :
+    m1 + m2 + m3 = m1 + (m2 + m3).
+  Proof. t. Qed.
 
   Definition singleton a v : mem := upd empty a v.
 
   Hint Unfold singleton : mem.
 
-  Definition disjoint_different_singleton m a v v' :
+  Theorem disjoint_different_singleton m a v v' :
     m # singleton a v ->
     m # singleton a v'.
   Proof.
@@ -224,14 +222,14 @@ Section Memory.
     exfalso; eauto.
   Qed.
 
-  Definition singleton_eq a v :
-    singleton a v a = Some v
-    := magic.
+  Theorem singleton_eq a v :
+    singleton a v a = Some v.
+  Proof. t. Qed.
 
-  Definition singleton_ne a v a' :
+  Theorem singleton_ne a v a' :
     a <> a' ->
-    singleton a v a' = None
-    := magic.
+    singleton a v a' = None.
+  Proof. t. Qed.
 
 End Memory.
 

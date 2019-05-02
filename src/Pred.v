@@ -75,19 +75,17 @@ Section Pred.
            | _ => solve [ eauto 10 ]
            end.
 
-  Notation magic := ltac:(t) (only parsing).
-
   Definition emp : pred := fun m => m = empty.
   Definition lift (P: Prop) : pred := fun m => P /\ m = empty.
 
   Hint Unfold emp lift : pred.
 
-  Definition lift_emp : forall P, lift P ===> emp
-    := magic.
+  Theorem lift_emp : forall P, lift P ===> emp.
+  Proof. t. Qed.
 
-  Definition emp_to_lift : forall (P:Prop),
-      P -> emp === lift P
-    := magic.
+  Theorem emp_to_lift : forall (P:Prop),
+      P -> emp === lift P.
+  Proof. t. Qed.
 
   Definition star p1 p2 : pred :=
     fun m => exists m1 m2, p1 m1 /\ p2 m2 /\
@@ -104,11 +102,11 @@ Section Pred.
 
   Hint Rewrite <- union_assoc : mem.
 
-  Definition star_comm p1 p2 :
-    p1 * p2 === p2 * p1
-    := magic.
+  Theorem star_comm p1 p2 :
+    p1 * p2 === p2 * p1.
+  Proof. t. Qed.
 
-  Definition star_assoc p1 p2 p3 :
+  Theorem star_assoc p1 p2 p3 :
     p1 * (p2 * p3) === p1 * p2 * p3.
   Proof.
     t.
@@ -141,19 +139,19 @@ Section Pred.
     apply star_emp_r.
   Qed.
 
-  Definition lift_star : forall P1 P2,
-      lift P1 * lift P2 === lift (P1 /\ P2)
-    := magic.
+  Theorem lift_star : forall P1 P2,
+      lift P1 * lift P2 === lift (P1 /\ P2).
+  Proof. t. Qed.
 
-  Definition impl_with_lift (P:Prop) p1 p2 :
+  Theorem impl_with_lift (P:Prop) p1 p2 :
     (P -> p1 ===> p2) ->
-    lift P * p1 ===> p2
-    := magic.
+    lift P * p1 ===> p2.
+  Proof. t. Qed.
 
-  Definition lift_equiv : forall P1 P2,
+  Theorem lift_equiv : forall P1 P2,
       P1 <-> P2 ->
-      lift P1 === lift P2
-    := magic.
+      lift P1 === lift P2.
+  Proof. t. Qed.
 
   Global Instance lift_respects_iff :
     Proper (iff ==> piff) lift.
@@ -161,10 +159,10 @@ Section Pred.
     firstorder.
   Qed.
 
-  Definition lift_impl : forall (P1 P2:Prop),
+  Theorem lift_impl : forall (P1 P2:Prop),
       P1 -> P2 ->
-      lift P1 ===> lift P2
-    := magic.
+      lift P1 ===> lift P2.
+  Proof. t. Qed.
 
   Global Instance lift_respects_impl :
     Proper (Basics.impl ==> pimpl) lift.
@@ -188,9 +186,7 @@ probably fine *)
     ptsto a v m1 ->
     ptsto a v m2 ->
     m1 = m2.
-  Proof.
-    t.
-  Qed.
+  Proof. t. Qed.
 
   Hint Resolve disjoint_different_singleton : core.
 
