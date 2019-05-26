@@ -15,8 +15,7 @@ Section Memory.
   Context (A V:Type).
   Record mem :=
     mkMem { mem_read :> A -> option V }.
-  Implicit Types (a:A) (v:V).
-  Implicit Types (m:mem).
+  Implicit Types (a:A) (v:V) (m:mem).
 
   Definition empty : mem :=
     mkMem (fun _ => None).
