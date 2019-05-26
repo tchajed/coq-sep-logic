@@ -6,7 +6,7 @@ Local Open Scope pred.
 Section Tests.
   Context (A V:Type).
   Notation pred := (pred A V).
-  Implicit Types (p:pred).
+  Implicit Type (p:pred).
   Implicit Types (P Q:Prop).
 
   Theorem test_assoc p1 p2 p3 :
