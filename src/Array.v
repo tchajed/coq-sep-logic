@@ -38,9 +38,9 @@ Section Arrays.
   Qed.
 
   Definition ptsto_array (n:nat) (x:list) : pred :=
-    fun m =>
-      forall i, (i < n -> m i = None) /\
-           (i >= n -> m i = index x (i-n)).
+    mkPred (fun m =>
+              forall i, (i < n -> m i = None) /\
+                   (i >= n -> m i = index x (i-n))).
 
   Theorem ptsto_array_subslice n x :
     forall l, ptsto_array n x (array l) ->
@@ -84,7 +84,7 @@ Section Arrays.
     ptsto_array n x m <->
     m = array_at_mem n x.
   Proof.
-    unfold ptsto_array; split; intros.
+    unfold ptsto_array; split; cbn [predApply] in *; intros.
     - apply mem_ext_eq; simpl; intros i.
       destruct (le_dec n i).
       specialize (H i); propositional.
@@ -95,9 +95,9 @@ Section Arrays.
   Qed.
 
   Theorem ptsto_array_to_mem n x :
-    ptsto_array n x === eq (array_at_mem n x).
+    ptsto_array n x === mkPred (eq (array_at_mem n x)).
   Proof.
-    split; intros.
+    split; cbn [predApply]; intros.
     - apply ptsto_array_mem in H; auto.
     - apply ptsto_array_mem; auto.
   Qed.
@@ -113,7 +113,7 @@ Section Arrays.
   Proof.
     rewrite ptsto_array_to_mem.
     unfold emp, empty.
-    split; intros; subst; simpl.
+    split; intros; cbn [predApply] in *; subst.
     - apply mem_ext_eq; intros i; simpl.
       destruct (le_dec n i); auto.
     - apply mem_ext_eq; intros i; simpl.
@@ -137,15 +137,15 @@ Section Arrays.
     ptsto_array n (x::xs) === ptsto n x * ptsto_array (S n) xs.
   Proof.
     rewrite ?ptsto_array_to_mem.
-    split; intros.
-    - unfold star.
+    split; intros; cbn [predApply] in *.
+    - unfold star; cbn [predApply].
       eexists (singleton n x), _; intuition eauto.
-      + unfold ptsto; auto.
+      + unfold ptsto, predApply; auto.
       + apply disjoint_from_singleton.
         simpl.
         destruct (le_dec (S n) n); auto; try omega.
       + rewrite array_at_mem_cons in *; auto.
-    - unfold star, ptsto in H; propositional.
+    - unfold star, ptsto, predApply in H; propositional.
       rewrite array_at_mem_cons; auto.
   Qed.
 

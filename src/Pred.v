@@ -20,7 +20,8 @@ Section Pred.
   Notation mem := (mem A V).
   Notation empty := (empty A V).
 
-  Definition pred := mem -> Prop.
+  Inductive pred :=
+    mkPred { predApply :> mem -> Prop }.
 
   Implicit Types (a:A) (v:V).
   Implicit Types (m:mem) (p:pred).
@@ -59,8 +60,15 @@ Section Pred.
     firstorder.
   Qed.
 
+  Theorem pred_apply p m :
+    p m ->
+    predApply (mkPred p) m.
+  Proof.
+    simpl; auto.
+  Qed.
+
   Hint Unfold pimpl piff : pred.
-  Hint Rewrite empty_union1 empty_union2 : mem.
+  Hint Rewrite empty_union1 empty_union2 pred_apply : mem.
 
   Ltac t :=
     autounfold with pred;
@@ -70,13 +78,14 @@ Section Pred.
              apply disjoint_sym1 in H; apply union_disjoint_elim in H
            | [ H: _ # (_ + _)  |- _ ] =>
              apply union_disjoint_elim in H
+           | _ => progress cbn [predApply]
            | _ => progress propositional
            | _ => progress autorewrite with mem
            | _ => solve [ eauto 10 ]
            end.
 
-  Definition emp : pred := fun m => m = empty.
-  Definition lift (P: Prop) : pred := fun m => P /\ m = empty.
+  Definition emp : pred := mkPred (fun m => m = empty).
+  Definition lift (P: Prop) : pred := mkPred (fun m => P /\ m = empty).
 
   Hint Unfold emp lift : pred.
 
@@ -88,9 +97,9 @@ Section Pred.
   Proof. t. Qed.
 
   Definition star p1 p2 : pred :=
-    fun m => exists m1 m2, p1 m1 /\ p2 m2 /\
-                   m1 # m2 /\
-                   m = m1 + m2.
+    mkPred (fun m => exists m1 m2, p1 m1 /\ p2 m2 /\
+                           m1 # m2 /\
+                           m = m1 + m2).
   Infix "*" := star.
 
   Hint Unfold star : pred.
@@ -153,10 +162,13 @@ Section Pred.
       lift P1 === lift P2.
   Proof. t. Qed.
 
+  Ltac instance_t :=
+    unfold Proper, "==>", Basics.impl; t.
+
   Global Instance lift_respects_iff :
     Proper (iff ==> piff) lift.
   Proof.
-    firstorder.
+    instance_t.
   Qed.
 
   Theorem lift_impl : forall (P1 P2:Prop),
@@ -167,18 +179,18 @@ Section Pred.
   Global Instance lift_respects_impl :
     Proper (Basics.impl ==> pimpl) lift.
   Proof.
-    firstorder.
+    unfold Proper, "==>", Basics.impl; t.
   Qed.
 
   Definition sep_ex T (p: T -> pred) : pred :=
-    fun m => exists x, p x m.
+    mkPred (fun m => exists x, p x m).
 
   Context `{Aeq: EqDec A}.
 
   (* not strictly necessary to use decidable equality for ptsto, but in practice
 probably fine *)
   Definition ptsto a v : pred :=
-    fun m => m = singleton a v.
+    mkPred (fun m => m = singleton a v).
 
   Hint Unfold ptsto : pred.
 
@@ -220,8 +232,7 @@ probably fine *)
   Global Instance star_respects_impl :
     Proper (pimpl ==> pimpl ==> pimpl) star.
   Proof.
-    unfold Proper, "==>"; intros.
-    t.
+    instance_t.
   Qed.
 
   Global Instance piff_subrelation :
@@ -253,6 +264,9 @@ probably fine *)
 
 End Pred.
 
+Arguments emp {A V}.
+Arguments lift {A V}.
+
 Module PredNotations.
   (* Declare Scope pred_scope. *)
   Delimit Scope pred_scope with pred.
@@ -265,5 +279,3 @@ Module PredNotations.
     (sep_ex (fun x => .. (sep_ex (fun y => p)) ..))
     (at level 200, x binder, y binder): pred_scope.
 End PredNotations.
-
-Arguments emp {A V}.
