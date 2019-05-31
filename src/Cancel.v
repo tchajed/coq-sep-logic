@@ -147,6 +147,16 @@ Ltac quote_eqn_hyp H :=
     end
   end.
 
+Ltac quote_app_hyp H :=
+  match type of H with
+  | @predApply ?A ?V ?x ?m =>
+    let init := init_reify A V in
+    init x ltac:(
+      fun ctx xt =>
+        change x with (interpret ctx xt) in H
+    )
+  end.
+
 Theorem reify_test A V (p1 p2 p3: pred A V) :
   p1 * p2 * p3 ===> p1 * (p2 * p3).
 Proof.
@@ -159,6 +169,12 @@ Theorem reify_with_hyp_test A V (p1 p2 p3: pred A V) :
 Proof.
   intros.
   quote_impl_hyp H.
+Abort.
+
+Theorem reify_app_test A V (p1: pred A V) m
+        (H: p1 m) : True.
+Proof.
+  quote_app_hyp H.
 Abort.
 
 (*! Proving theorems on reified syntax *)
@@ -416,6 +432,33 @@ Module Norm.
       rewrite H; auto.
     Qed.
 
+
+    Theorem empty_props_optimization Ps Q :
+      match Ps with
+      | nil => Q
+      | _ => flatten_props1 Ps /\ Q
+      end <-> flatten_props1 Ps /\ Q.
+    Proof.
+      destruct Ps; simpl; firstorder.
+    Qed.
+
+    Theorem grab_props_apply vm l m :
+      predApply (int_props vm (grab_props l)) m ->
+      let (P, p) := grab_props l in
+      let remaining_pred := predApply (interpret_l vm p) m in
+      match P with
+      | nil => remaining_pred
+      | _ => flatten_props1 P /\ remaining_pred
+      end.
+    Proof.
+      intros.
+      destruct (grab_props l) as [P p].
+      cbn [int_props] in H.
+      cbv zeta.
+      apply empty_props_optimization.
+      apply lift_applied in H; auto.
+    Qed.
+
   End Mem.
 End Norm.
 
@@ -428,6 +471,35 @@ Ltac norm_reified_iff :=
   rewrite ?Norm.interpret_flatten;
   apply Norm.interpret_l_sort_iff;
   apply Norm.grab_props_iff.
+
+(* for a predApply hypothesis with reified predicate *)
+Ltac norm_reified_hyp H :=
+  rewrite Norm.interpret_flatten in H;
+  rewrite Norm.interpret_l_sort in H;
+  rewrite Norm.interpret_grab_props in H;
+  apply Norm.grab_props_apply in H.
+
+Local Ltac destruct_ands_in H :=
+  try match type of H with
+      | _ /\ _ => let H' := fresh in
+                destruct H as [H H'];
+                destruct_ands_in H'
+      end.
+
+Ltac cleanup_normed_app H :=
+  cbn [Norm.int_props
+         Norm.flatten Norm.flatten_props1 Norm.interpret_l
+         Norm.int_l' interpret_e Varmap.varmap.find
+         PeanoNat.Nat.eqb
+         app Sorting.sortBy Sorting.sort Sorting.insert_sort Sorting.insert
+         Norm.get_key PeanoNat.Nat.leb
+         Norm.grab_props] in H;
+  try match type of H with
+      | _ /\ _ =>
+        let H' := fresh in
+        destruct H as [H' H];
+        destruct_ands_in H'
+      end.
 
 Ltac cleanup_normed_goal :=
   match goal with
@@ -451,11 +523,16 @@ Ltac norm :=
   end; simpl;
   cleanup_normed_goal.
 
-Ltac norm_hyp H :=
+Ltac norm_with H :=
   intros;
   quote_impl_hyp H;
   norm_reified; simpl;
   cleanup_normed_goal.
+
+Ltac norm_hyp H :=
+  quote_app_hyp H;
+  norm_reified_hyp H;
+  cleanup_normed_app H.
 
 Ltac normed_cancellation :=
   try match goal with

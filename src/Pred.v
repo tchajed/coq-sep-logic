@@ -152,6 +152,10 @@ Section Pred.
       lift P1 * lift P2 === lift (P1 /\ P2).
   Proof. t. Qed.
 
+  Theorem lift_applied P p m :
+    predApply (lift P * p) m -> P /\ p m.
+  Proof. t. Qed.
+
   Theorem impl_with_lift (P:Prop) p1 p2 :
     (P -> p1 ===> p2) ->
     lift P * p1 ===> p2.
@@ -260,6 +264,18 @@ probably fine *)
     Proper (piff ==> piff ==> Basics.impl) pimpl.
   Proof.
     firstorder.
+  Qed.
+
+  Global Instance pimpl_predApply :
+    Proper (pimpl ==> eq ==> Basics.impl) predApply.
+  Proof.
+    instance_t.
+  Qed.
+
+  Global Instance piff_predApply :
+    Proper (piff ==> eq ==> iff) predApply.
+  Proof.
+    instance_t; firstorder.
   Qed.
 
 End Pred.

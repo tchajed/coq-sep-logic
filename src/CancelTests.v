@@ -73,8 +73,8 @@ Section Tests.
     p1 * p2 * p4 ===> p2 * p3.
   Proof.
     intros.
-    (* norm_hyp ensures normalization prefers the hypothesis terms *)
-    norm_hyp H.
+    (* norm_with ensures normalization prefers the hypothesis terms *)
+    norm_with H.
     rewrite H.
     reflexivity.
   Qed.
@@ -84,9 +84,27 @@ Section Tests.
     p2 * p3 ===> p1 * p2 * p4.
   Proof.
     intros.
-    norm_hyp H.
+    norm_with H.
     rewrite <- H.
     reflexivity.
+  Qed.
+
+  Theorem test_lift_hyp1 (P: Prop) p m :
+    predApply ([P] * p) m ->
+    P.
+  Proof.
+    intro H.
+    norm_hyp H.
+    assumption.
+  Qed.
+
+  Theorem test_lift_hyp2 (P Q: Prop) p1 p2 m :
+    predApply (p1 * [P] * [Q] * p2) m ->
+    Q.
+  Proof.
+    intro H.
+    norm_hyp H.
+    assumption.
   Qed.
 
 End Tests.
