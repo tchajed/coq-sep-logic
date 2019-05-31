@@ -84,6 +84,18 @@ Section Pred.
            | _ => solve [ eauto 10 ]
            end.
 
+  Theorem pred_impl_apply p1 p2 m :
+    p1 m ->
+    p1 ===> p2 ->
+    p2 m.
+  Proof. firstorder. Qed.
+
+  Theorem pred_iff_apply p1 p2 m :
+    p1 m ->
+    p1 === p2 ->
+    p2 m.
+  Proof. firstorder. Qed.
+
   Definition emp : pred := mkPred (fun m => m = empty).
   Definition lift (P: Prop) : pred := mkPred (fun m => P /\ m = empty).
 
@@ -295,3 +307,6 @@ Module PredNotations.
     (sep_ex (fun x => .. (sep_ex (fun y => p)) ..))
     (at level 200, x binder, y binder): pred_scope.
 End PredNotations.
+
+Arguments pred_impl_apply {A V p1 p2 m} H.
+Arguments pred_iff_apply {A V p1 p2 m} H.
