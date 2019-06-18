@@ -179,7 +179,7 @@ Section Pred.
   Proof. t. Qed.
 
   Ltac instance_t :=
-    unfold Proper, "==>", Basics.impl; t.
+    unfold Proper, "==>", Basics.impl, pointwise_relation; t.
 
   Global Instance lift_respects_iff :
     Proper (iff ==> piff) lift.
@@ -198,11 +198,64 @@ Section Pred.
     unfold Proper, "==>", Basics.impl; t.
   Qed.
 
-  Definition pred_forall T (p: T -> pred) : pred :=
+  Definition pred_forall {T} (p: T -> pred) : pred :=
     mkPred (fun m => forall x, p x m).
 
-  Definition pred_ex T (p: T -> pred) : pred :=
+  Definition pred_ex {T} (p: T -> pred) : pred :=
     mkPred (fun m => exists x, p x m).
+
+  Hint Unfold pred_forall pred_ex : pred.
+
+  Theorem pred_ex_over_star T (p: T -> pred) (p': pred) :
+    p' * pred_ex p === pred_ex (fun x => p' * p x).
+  Proof. t. Qed.
+
+  Theorem pred_ex_over_star_l T (p: T -> pred) (p': pred) :
+    pred_ex p * p' === pred_ex (fun x => p x * p').
+  Proof. t. Qed.
+
+  (* converse is not true - the right-hand side says p' * p x holds for each
+     full memory, while the left-hand side requires a split in which [forall x, p(x)]
+     is true of the smaller memory. *)
+  Theorem pred_forall_combine T (p: T -> pred) (p': pred) :
+    p' * pred_forall p ===> pred_forall (fun x => p' * p x).
+  Proof. t. Qed.
+
+  Theorem pred_ex_elim T (p: T -> pred) m :
+    pred_ex p m -> exists x, p x m.
+  Proof. exact id. Qed.
+
+  Theorem pred_forall_elim T (p: T -> pred) m :
+    pred_forall p m -> forall x, p x m.
+  Proof. exact id. Qed.
+
+  Global Instance pred_ex_respects_impl T :
+    Proper (pointwise_relation _ pimpl ==> pimpl) (pred_ex (T:=T)).
+  Proof.
+    instance_t.
+  Qed.
+
+  Global Instance pred_ex_respects_iff T :
+    Proper (pointwise_relation _ piff ==> piff) (pred_ex (T:=T)).
+  Proof.
+    instance_t.
+    - firstorder.
+    - firstorder.
+  Qed.
+
+  Global Instance pred_forall_respects_impl T :
+    Proper (pointwise_relation _ pimpl ==> pimpl) (pred_forall (T:=T)).
+  Proof.
+    instance_t.
+  Qed.
+
+  Global Instance pred_forall_respects_iff T :
+    Proper (pointwise_relation _ piff ==> piff) (pred_forall (T:=T)).
+  Proof.
+    instance_t.
+    - firstorder.
+    - firstorder.
+  Qed.
 
   Context `{Aeq: EqDec A}.
 
