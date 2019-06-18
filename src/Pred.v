@@ -198,6 +198,9 @@ Section Pred.
     unfold Proper, "==>", Basics.impl; t.
   Qed.
 
+  Definition sep_forall T (p: T -> pred) : pred :=
+    mkPred (fun m => forall x, p x m).
+
   Definition sep_ex T (p: T -> pred) : pred :=
     mkPred (fun m => exists x, p x m).
 
@@ -305,6 +308,9 @@ Module PredNotations.
   Notation "[ P ]" := (lift P) : pred_scope.
   Notation "'exists!' x .. y , p" :=
     (sep_ex (fun x => .. (sep_ex (fun y => p)) ..))
+    (at level 200, x binder, y binder): pred_scope.
+  Notation "'forall!' x .. y , p" :=
+    (sep_forall (fun x => .. (sep_forall (fun y => p)) ..))
     (at level 200, x binder, y binder): pred_scope.
 End PredNotations.
 
