@@ -109,6 +109,17 @@ Section Tests.
 
 End Tests.
 
+Module GitHubIssues.
+  Inductive perm := Public | Private.
+  Definition value : Type := perm * nat.
+  Theorem test_issue_4 (F: pred nat value) v v1 v2 :
+    F * 0 |-> (Public, v) * 1 |-> v1 * 2 |-> v2 ===>
+    F * 1 |-> v1 * 2 |-> v2 * 0 |-> (Public, v).
+  Proof.
+    cancel.
+  Qed.
+End GitHubIssues.
+
 Module Demo.
 
   Arguments Atom {A V}.
