@@ -189,7 +189,9 @@ Module Norm.
 
     Import List.ListNotations.
 
-    Hint Resolve (ltac:(reflexivity) : forall (p:pred), p === p) : core.
+    Lemma equiv_refl : forall (p:pred), p === p.
+    Proof. reflexivity. Qed.
+    Hint Resolve equiv_refl : core.
 
     Fixpoint flatten (t:op_tree) : list op_element :=
       match t with
