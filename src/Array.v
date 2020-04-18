@@ -5,7 +5,8 @@ From SepLogic Require Import Mem Pred Cancel.
 it's more precise than this) *)
 Require Import Array.Array.
 
-Require Import Omega.
+Require Import Lia.
+Import Compare_dec.
 
 Section Arrays.
   Import List.ListNotations.
@@ -52,8 +53,8 @@ Section Arrays.
     destruct (lt_dec i (length x));
       autorewrite with array in *.
     specialize (H (n+i)); propositional.
-    specialize (H0 ltac:(omega)).
-    rewrite minus_plus in H0; auto.
+    specialize (H0 ltac:(lia)).
+    rewrite Minus.minus_plus in H0; auto.
     auto.
   Qed.
 
@@ -71,7 +72,7 @@ Section Arrays.
   Proof.
     unfold ptsto_array; propositional.
     specialize (H i); propositional.
-    specialize (H1 ltac:(omega)).
+    specialize (H1 ltac:(lia)).
     autorewrite with array in H1.
     auto.
   Qed.
@@ -89,9 +90,9 @@ Section Arrays.
       destruct (le_dec n i).
       specialize (H i); propositional.
       specialize (H i); propositional.
-      specialize (H ltac:(omega)); auto.
+      specialize (H ltac:(lia)); auto.
     - subst; simpl.
-      destruct (le_dec n i); intuition (auto; try omega).
+      destruct (le_dec n i); intuition (auto; try lia).
   Qed.
 
   Theorem ptsto_array_to_mem n x :
@@ -126,11 +127,11 @@ Section Arrays.
     apply mem_ext_eq; intros i; simpl.
     subst; simpl.
     destruct (le_dec n i), (Instances.equal n i), (le_dec (S n) i);
-      try omega;
+      try lia;
       auto.
-    replace (i - n) with 0 by omega; auto.
-    destruct_with_eqn (i - n); try omega.
-    f_equal; omega.
+    replace (i - n) with 0 by lia; auto.
+    destruct_with_eqn (i - n); try lia.
+    f_equal; lia.
   Qed.
 
   Lemma ptsto_array_cons n x xs :
@@ -143,7 +144,7 @@ Section Arrays.
       + unfold ptsto, predApply; auto.
       + apply disjoint_from_singleton.
         simpl.
-        destruct (le_dec (S n) n); auto; try omega.
+        destruct (le_dec (S n) n); auto; try lia.
       + rewrite array_at_mem_cons in *; auto.
     - unfold star, ptsto, predApply in H; propositional.
       rewrite array_at_mem_cons; auto.
@@ -168,10 +169,10 @@ Section Arrays.
     generalize dependent x2.
     generalize dependent n1.
     induction x1; simpl; intros.
-    - replace (n1 + 0) with n1 by omega;
+    - replace (n1 + 0) with n1 by lia;
       cancel.
     - rewrite <- IHx1.
-      rewrite Nat.add_succ_r.
+      rewrite PeanoNat.Nat.add_succ_r.
       cancel.
   Qed.
 
