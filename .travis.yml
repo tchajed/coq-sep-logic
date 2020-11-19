@@ -11,7 +11,6 @@ env:
   jobs:
   - COQ_IMAGE="coqorg/coq:dev"
   - COQ_IMAGE="coqorg/coq:latest"
-  - COQ_IMAGE="coqorg/coq:8.11"
 
 install: |
   # Prepare the COQ container
