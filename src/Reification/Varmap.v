@@ -11,6 +11,7 @@ Instance def_pair A B {defA:Default A} {defB:Default B}
   : Default (A*B) := (default_val, default_val).
 Instance def_type : Default Type := unit.
 
+#[export]
 Hint Extern 1 (Default _) => solve [ constructor ] : typeclass_instances.
 
 Module varmap.
