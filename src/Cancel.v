@@ -13,7 +13,7 @@ Local Open Scope pred.
 Set Implicit Arguments.
 
 (*! Setting up reified syntax *)
-Instance pred_def A V : Default (pred A V) := @emp A V.
+Global Instance pred_def A V : Default (pred A V) := @emp A V.
 
 Section Mem.
   Context (A V:Type).

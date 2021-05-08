@@ -6,10 +6,10 @@ Set Warnings "-undeclared-scope".
 
 Class Default A := default_val: A.
 
-Instance def_f A B {def:Default B} : Default (A -> B) := fun _ => default_val.
-Instance def_pair A B {defA:Default A} {defB:Default B}
+Global Instance def_f A B {def:Default B} : Default (A -> B) := fun _ => default_val.
+Global Instance def_pair A B {defA:Default A} {defB:Default B}
   : Default (A*B) := (default_val, default_val).
-Instance def_type : Default Type := unit.
+Global Instance def_type : Default Type := unit.
 
 #[export]
 Hint Extern 1 (Default _) => solve [ constructor ] : typeclass_instances.

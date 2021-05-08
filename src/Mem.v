@@ -248,8 +248,8 @@ Module MemNotations.
   Notation "m [ a ]" := (mem_read m a) (at level 13, no associativity) : mem_scope.
 End MemNotations.
 
-Hint Rewrite upd_eq : upd.
-Hint Rewrite upd_ne using solve [ trivial || congruence ] : upd.
-Hint Rewrite singleton_eq : upd.
-Hint Rewrite singleton_ne using solve [ trivial || congruence ] : upd.
-Hint Rewrite upd_upd : upd.
+Global Hint Rewrite upd_eq : upd.
+Global Hint Rewrite upd_ne using solve [ trivial || congruence ] : upd.
+Global Hint Rewrite singleton_eq : upd.
+Global Hint Rewrite singleton_ne using solve [ trivial || congruence ] : upd.
+Global Hint Rewrite upd_upd : upd.
