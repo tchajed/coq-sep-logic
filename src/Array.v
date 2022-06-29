@@ -51,11 +51,12 @@ Section Arrays.
     apply index_ext_eq; intros i.
     simpl in *.
     destruct (lt_dec i (length x));
-      autorewrite with array in *.
+      autorewrite with array in *;
+      auto.
     specialize (H (n+i)); propositional.
     specialize (H0 ltac:(lia)).
-    rewrite Minus.minus_plus in H0; auto.
-    auto.
+    assert (n + i - n = i) by lia.
+    congruence.
   Qed.
 
   Theorem ptsto_array_oob_small n x m :
