@@ -1,12 +1,12 @@
 # Separation logic library
 
-[![Build Status](https://travis-ci.com/tchajed/coq-sep-logic.svg?branch=master)](https://travis-ci.com/tchajed/coq-sep-logic)
+[![CI](https://github.com/tchajed/coq-sep-logic/actions/workflows/coq-action.yml/badge.svg)](https://github.com/tchajed/coq-sep-logic/actions/workflows/coq-action.yml)
 
 A basic library for separation logic in Coq.
 
 Uses `A -> option V` as the basic representation of heaps with addresses `A` and values `V`. Addresses should have decidable equality for basic operations like heap updates to work.
 
-The library includes a tactic `cancel` that normalizes predicate implications in separation logic, attempting to make both sides identical. It normalizes the use of lifted propositions, filters out `emp`, and re-orders the conjucts on the right-hand side to match the order of the left-hand side.
+The library includes a tactic `cancel` that normalizes predicate implications in separation logic, attempting to make both sides identical. It normalizes the use of lifted propositions, filters out `emp`, and re-orders the conjuncts on the right-hand side to match the order of the left-hand side.
 
 ## Compiling
 
